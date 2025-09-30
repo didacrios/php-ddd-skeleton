@@ -69,6 +69,7 @@ replace_placeholders() {
         -e "s|{{DOCKER_DB_CONTAINER_NAME}}|${DOCKER_DB_CONTAINER_NAME}|g" \
         -e "s|{{DOCKER_NETWORK}}|${DOCKER_NETWORK}|g" \
         -e "s|{{SUBNET_IP}}|${SUBNET_IP}|g" \
+        -e "s|{{SUBNET_BASE}}|${SUBNET_BASE}|g" \
         -e "s|{{SUBNET_ALIAS}}|${SUBNET_ALIAS}|g" \
         -e "s|{{APACHE_PORT}}|${APACHE_PORT}|g" \
         -e "s|{{DB_PORT}}|${DB_PORT}|g" \
@@ -116,6 +117,7 @@ export DOCKER_CONTAINER_NAME="${PROJECT_NAME}_web"
 export DOCKER_DB_CONTAINER_NAME="${PROJECT_NAME}_db"
 export DOCKER_NETWORK="${PROJECT_NAME}_network"
 export SUBNET_IP=$(grep '^SUBNET_IP :=' Makefile | cut -d' ' -f3)
+export SUBNET_BASE=$(grep '^SUBNET_BASE :=' Makefile | cut -d' ' -f3)
 export SUBNET_ALIAS="${PROJECT_NAME}.local"
 export APACHE_PORT=$(grep '^APACHE_PORT :=' Makefile | cut -d' ' -f3)
 export DB_PORT=$(grep '^DB_PORT :=' Makefile | cut -d' ' -f3)
@@ -123,7 +125,7 @@ export DB_NAME="${PROJECT_NAME}"
 export DB_USER="${PROJECT_NAME}"
 export DB_PASSWORD="${PROJECT_NAME}"
 export DB_ROOT_PASSWORD=$(grep '^DB_ROOT_PASSWORD :=' Makefile | cut -d' ' -f3)
-export XDEBUG_HOST=$(grep '^XDEBUG_HOST :=' Makefile | cut -d' ' -f3)
+export XDEBUG_HOST="${SUBNET_BASE}.1"
 export XDEBUG_PORT=$(grep '^XDEBUG_PORT :=' Makefile | cut -d' ' -f3)
 
 # Generate a secure random APP_SECRET
