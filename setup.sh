@@ -98,6 +98,113 @@ replace_placeholders() {
     mv "$temp_file" "$output_file"
 }
 
+# Function to check if a port is available
+check_port_availability() {
+    local port="$1"
+    local port_name="$2"
+
+    if ss -tulpn | grep -q ":$port "; then
+        echo -e "${RED}  ❌ Port $port ($port_name) is already in use${NC}"
+        return 1
+    else
+        echo -e "${GREEN}  ✅ Port $port ($port_name) is available${NC}"
+        return 0
+    fi
+}
+
+# Function to check Docker network
+check_docker_network_availability() {
+    local network_name="$1"
+
+    if docker network ls --format "{{.Name}}" | grep -q "^$network_name$"; then
+        echo -e "${YELLOW}  ⚠️  Network '$network_name' already exists (will be removed)${NC}"
+        return 1
+    else
+        echo -e "${GREEN}  ✅ Network '$network_name' is available${NC}"
+        return 0
+    fi
+}
+
+# Function to check container names
+check_container_names() {
+    local web_container="$1"
+    local db_container="$2"
+    local conflicts=0
+
+    if docker ps -a --format "{{.Names}}" | grep -q "^$web_container$"; then
+        echo -e "${YELLOW}  ⚠️  Container '$web_container' already exists (will be removed)${NC}"
+        conflicts=1
+    else
+        echo -e "${GREEN}  ✅ Container name '$web_container' is available${NC}"
+    fi
+
+    if docker ps -a --format "{{.Names}}" | grep -q "^$db_container$"; then
+        echo -e "${YELLOW}  ⚠️  Container '$db_container' already exists (will be removed)${NC}"
+        conflicts=1
+    else
+        echo -e "${GREEN}  ✅ Container name '$db_container' is available${NC}"
+    fi
+
+    return $conflicts
+}
+
+# Function to check hosts file
+check_hosts_file() {
+    local alias="$1"
+
+    if grep -q "$alias" /etc/hosts 2>/dev/null; then
+        echo -e "${YELLOW}  ⚠️  Alias '$alias' already exists in /etc/hosts${NC}"
+        return 1
+    else
+        echo -e "${GREEN}  ✅ Alias '$alias' not found in /etc/hosts${NC}"
+        return 0
+    fi
+}
+
+# Function to run all availability checks
+run_availability_checks() {
+    local apache_port="$1"
+    local db_port="$2"
+    local network="$3"
+    local web_container="$4"
+    local db_container="$5"
+    local alias="$6"
+
+    echo -e "${GREEN}🔍 Checking resource availability...${NC}"
+    echo ""
+
+    local has_conflicts=0
+
+    # Check ports
+    echo -e "${YELLOW}Checking ports:${NC}"
+    check_port_availability "$apache_port" "Apache" || has_conflicts=1
+    check_port_availability "$db_port" "Database" || has_conflicts=1
+    echo ""
+
+    # Check Docker network
+    echo -e "${YELLOW}Checking Docker network:${NC}"
+    check_docker_network_availability "$network" || has_conflicts=1
+    echo ""
+
+    # Check container names
+    echo -e "${YELLOW}Checking container names:${NC}"
+    check_container_names "$web_container" "$db_container" || has_conflicts=1
+    echo ""
+
+    # Check hosts file
+    echo -e "${YELLOW}Checking hosts file:${NC}"
+    check_hosts_file "$alias" || has_conflicts=1
+    echo ""
+
+    if [ $has_conflicts -eq 1 ]; then
+        echo -e "${YELLOW}⚠️  Some resources already exist but will be cleaned up during setup${NC}"
+    else
+        echo -e "${GREEN}✅ All resources are available${NC}"
+    fi
+
+    return 0
+}
+
 echo -e "${GREEN}🚀 LAMP Skeleton Setup Script${NC}"
 echo ""
 
@@ -144,6 +251,9 @@ echo "  Database Name: ${DB_NAME}"
 echo "  App Secret: ${APP_SECRET:0:8}... (generated securely)"
 echo ""
 
+# Run availability checks
+run_availability_checks "${APACHE_PORT}" "${DB_PORT}" "${DOCKER_NETWORK}" "${DOCKER_CONTAINER_NAME}" "${DOCKER_DB_CONTAINER_NAME}" "${SUBNET_ALIAS}"
+echo ""
 # Ask for confirmation
 echo -e "${YELLOW}Do you want to continue with the setup? (y/N)${NC}"
 read -r response
