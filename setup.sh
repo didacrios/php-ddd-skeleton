@@ -450,31 +450,7 @@ docker exec "${DOCKER_CONTAINER_NAME}" composer dump-autoload --optimize
 echo -e "${GREEN}✅ Composer configured${NC}"
 
 # Clean up template files
-echo -e "${GREEN}🧹 Cleaning up template files...${NC}"
-rm -f docker-compose.yml.template
-rm -f composer.json.template
-rm -f .docker/config/vhosts/default.conf.template
-rm -f .docker/php8.4/Dockerfile.template
-rm -f config/packages/doctrine.yaml.template
-rm -f config/routes/entrypoint.yaml.template
-rm -f config/services/entrypoint.yaml.template
-rm -f config/services/shared.yaml.template
-rm -f bin/console.template
-rm -f public/index.php.template
-rm -f src/Kernel.php.template
-rm -f phpunit.xml.template
-rm -f src/Entrypoint/Http/Controllers/HelloWorldController.php.template
-rm -f src/Entrypoint/Console/Commands/HelloWorldCommand.php.template
-rm -f src/Shared/Domain/ValueObject.php.template
-rm -f src/Shared/Domain/Entity.php.template
-rm -f src/Shared/Domain/Repository.php.template
-rm -f src/Shared/Application/Command.php.template
-rm -f src/Shared/Application/Query.php.template
-rm -f tests/Entrypoint/Http/Controllers/HelloWorldControllerTest.php.template
-rm -f tests/Shared/Domain/ValueObjectTest.php.template
-rm -f .env.template
-rm -f .env.test.template
-rm -f phpstan.neon.template
+find . -name "*.template" -not -path "./vendor/*" -not -path "./.git/*" -delete
 echo -e "${GREEN}✅ Template files cleaned up${NC}"
 
 

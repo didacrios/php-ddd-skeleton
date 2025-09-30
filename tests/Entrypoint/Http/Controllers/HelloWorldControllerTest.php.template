@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace {{APP_NAMESPACE}}\Tests\Unit\Entrypoint\Http\Controllers;
+namespace {{APP_NAMESPACE}}\Tests\Entrypoint\Http\Controllers;
 
 use {{APP_NAMESPACE}}\Entrypoint\Http\Controllers\HelloWorldController;
 use PHPUnit\Framework\TestCase;
