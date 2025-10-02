@@ -47,7 +47,12 @@ setup: ## Run the complete setup process
 	@echo "$(GREEN)🚀 Starting LAMP Skeleton Setup...$(NC)"
 	@echo ""
 	@$(MAKE) check-dependencies
-	@./setup.sh && $(MAKE) setup-hosts || (echo "$(RED)❌ Setup cancelled or failed. Skipping hosts configuration.$(NC)" && exit 1)
+	@./setup.sh || (echo "$(RED)❌ Setup cancelled or failed.$(NC)" && exit 1)
+	@if [ "$$SETUP_HOSTS" = "true" ]; then \
+		$(MAKE) setup-hosts; \
+	else \
+		echo "$(YELLOW)⚠️  Hosts configuration skipped$(NC)"; \
+	fi
 
 
 # Dependency checks

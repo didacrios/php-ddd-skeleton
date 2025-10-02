@@ -254,12 +254,27 @@ echo ""
 # Run availability checks
 run_availability_checks "${APACHE_PORT}" "${DB_PORT}" "${DOCKER_NETWORK}" "${DOCKER_CONTAINER_NAME}" "${DOCKER_DB_CONTAINER_NAME}" "${SUBNET_ALIAS}"
 echo ""
+
 # Ask for confirmation
 echo -e "${YELLOW}Do you want to continue with the setup? (y/N)${NC}"
 read -r response
 if [[ ! "$response" =~ ^[Yy]$ ]]; then
     echo -e "${RED}Setup cancelled by user${NC}"
     exit 1
+fi
+
+# Ask about hosts file configuration
+echo ""
+echo -e "${YELLOW}Do you want to add ${SUBNET_ALIAS} to /etc/hosts? (y/N)${NC}"
+echo -e "${YELLOW}This will allow you to access the application via http://${SUBNET_ALIAS}:${APACHE_PORT}${NC}"
+read -r hosts_response
+if [[ "$hosts_response" =~ ^[Yy]$ ]]; then
+    export SETUP_HOSTS=true
+    echo -e "${GREEN}✅ Hosts file configuration will be added${NC}"
+else
+    export SETUP_HOSTS=false
+    echo -e "${YELLOW}⚠️  Hosts file configuration skipped${NC}"
+    echo -e "${YELLOW}   You can access the application via http://localhost:${APACHE_PORT}${NC}"
 fi
 
 # Check for existing infrastructure and ask for confirmation
@@ -271,34 +286,28 @@ echo ""
 echo -e "${GREEN}✅ Infrastructure check completed${NC}"
 echo ""
 
-# Process template files
 echo -e "${GREEN}📝 Processing template files...${NC}"
 
-# Process docker-compose template
 if [ -f "docker-compose.yml.template" ]; then
     replace_placeholders "docker-compose.yml.template"
     echo "  ✅ docker-compose.yml generated"
 fi
 
-# Process vhosts template
 if [ -f ".docker/config/vhosts/default.conf.template" ]; then
     replace_placeholders ".docker/config/vhosts/default.conf.template"
     echo "  ✅ Apache vhosts configuration generated"
 fi
 
-# Process Dockerfile template
 if [ -f ".docker/php8.4/Dockerfile.template" ]; then
     replace_placeholders ".docker/php8.4/Dockerfile.template"
     echo "  ✅ Dockerfile generated"
 fi
 
-# Process composer.json template
 if [ -f "composer.json.template" ]; then
     replace_placeholders "composer.json.template"
     echo "  ✅ composer.json generated"
 fi
 
-# Process configuration templates
 if [ -f "config/routes/entrypoint.yaml.template" ]; then
     replace_placeholders "config/routes/entrypoint.yaml.template"
     echo "  ✅ config/routes/entrypoint.yaml generated"
@@ -314,33 +323,31 @@ if [ -f "config/services/shared.yaml.template" ]; then
     echo "  ✅ config/services/shared.yaml generated"
 fi
 
-    # Process core application files
-    if [ -f "bin/console.template" ]; then
-        replace_placeholders "bin/console.template"
-        echo "  ✅ bin/console generated"
-    fi
+if [ -f "bin/console.template" ]; then
+    replace_placeholders "bin/console.template"
+    echo "  ✅ bin/console generated"
+fi
 
-    if [ -f "config/packages/doctrine.yaml.template" ]; then
-        replace_placeholders "config/packages/doctrine.yaml.template"
-        echo "  ✅ doctrine.yaml generated"
-    fi
+if [ -f "config/packages/doctrine.yaml.template" ]; then
+    replace_placeholders "config/packages/doctrine.yaml.template"
+    echo "  ✅ doctrine.yaml generated"
+fi
 
-    if [ -f "public/index.php.template" ]; then
-        replace_placeholders "public/index.php.template"
-        echo "  ✅ public/index.php generated"
-    fi
+if [ -f "public/index.php.template" ]; then
+    replace_placeholders "public/index.php.template"
+    echo "  ✅ public/index.php generated"
+fi
 
-    if [ -f "src/Kernel.php.template" ]; then
-        replace_placeholders "src/Kernel.php.template"
-        echo "  ✅ src/Kernel.php generated"
-    fi
+if [ -f "src/Kernel.php.template" ]; then
+    replace_placeholders "src/Kernel.php.template"
+    echo "  ✅ src/Kernel.php generated"
+fi
 
-    if [ -f "phpunit.xml.template" ]; then
-        replace_placeholders "phpunit.xml.template"
-        echo "  ✅ phpunit.xml generated"
-    fi
+if [ -f "phpunit.xml.template" ]; then
+    replace_placeholders "phpunit.xml.template"
+    echo "  ✅ phpunit.xml generated"
+fi
 
-# Process source code templates
 if [ -f "src/Entrypoint/Http/Controllers/HelloWorldController.php.template" ]; then
     replace_placeholders "src/Entrypoint/Http/Controllers/HelloWorldController.php.template"
     echo "  ✅ HelloWorldController.php generated"
@@ -351,7 +358,6 @@ if [ -f "src/Entrypoint/Console/Commands/HelloWorldCommand.php.template" ]; then
     echo "  ✅ HelloWorldCommand.php generated"
 fi
 
-# Process Shared domain templates
 if [ -f "src/Shared/Domain/ValueObject.php.template" ]; then
     replace_placeholders "src/Shared/Domain/ValueObject.php.template"
     echo "  ✅ ValueObject.php generated"
@@ -377,7 +383,6 @@ if [ -f "src/Shared/Application/Query.php.template" ]; then
     echo "  ✅ Query.php generated"
 fi
 
-# Process test templates
 if [ -f "tests/Entrypoint/Http/Controllers/HelloWorldControllerTest.php.template" ]; then
     replace_placeholders "tests/Entrypoint/Http/Controllers/HelloWorldControllerTest.php.template"
     echo "  ✅ HelloWorldControllerTest.php generated"
@@ -388,7 +393,6 @@ if [ -f "tests/Shared/Domain/ValueObjectTest.php.template" ]; then
     echo "  ✅ ValueObjectTest.php generated"
 fi
 
-# Process environment templates
 if [ -f ".env.template" ]; then
     replace_placeholders ".env.template"
     echo "  ✅ .env generated"
@@ -399,13 +403,11 @@ if [ -f ".env.test.template" ]; then
     echo "  ✅ .env.test generated"
 fi
 
-# Process PHPStan configuration template
 if [ -f "phpstan.neon.template" ]; then
     replace_placeholders "phpstan.neon.template"
     echo "  ✅ phpstan.neon generated"
 fi
 
-# Process service configuration templates
 if [ -f "config/services/entrypoint.yaml.template" ]; then
     replace_placeholders "config/services/entrypoint.yaml.template"
     echo "  ✅ entrypoint.yaml generated"
@@ -416,44 +418,47 @@ if [ -f "config/services/shared.yaml.template" ]; then
     echo "  ✅ shared.yaml generated"
 fi
 
-# Process routes configuration templates
 if [ -f "config/routes/entrypoint.yaml.template" ]; then
     replace_placeholders "config/routes/entrypoint.yaml.template"
     echo "  ✅ entrypoint routes generated"
 fi
 
-# Note: Template files are preserved for future regeneration
-echo -e "${GREEN}📝 Template files preserved for future use${NC}"
-
 echo ""
 echo -e "${GREEN}✅ Template processing completed!${NC}"
 echo ""
 
-# Build Docker images
 echo -e "${GREEN}🔨 Building Docker images...${NC}"
 COMPOSE_PROJECT_NAME="${PROJECT_NAME}" docker-compose build --no-cache
 echo -e "${GREEN}✅ Images built successfully${NC}"
 
-# Start containers
 echo -e "${GREEN}🚀 Starting containers...${NC}"
 COMPOSE_PROJECT_NAME="${PROJECT_NAME}" docker-compose up -d
 echo -e "${GREEN}✅ Containers started${NC}"
 
-# Install dependencies
 echo -e "${GREEN}📦 Installing dependencies...${NC}"
 docker exec "${DOCKER_CONTAINER_NAME}" composer install --optimize-autoloader
 echo -e "${GREEN}✅ Dependencies installed${NC}"
 
-# Setup Composer autoload
 echo -e "${GREEN}📦 Setting up Composer...${NC}"
 docker exec "${DOCKER_CONTAINER_NAME}" composer dump-autoload --optimize
 echo -e "${GREEN}✅ Composer configured${NC}"
 
-# Clean up template files
 find . -name "*.template" -not -path "./vendor/*" -not -path "./.git/*" -delete
 echo -e "${GREEN}✅ Template files cleaned up${NC}"
+
+echo -e "${GREEN}🔐 Fixing file permissions...${NC}"
+sudo chown -R $(whoami):$(whoami) .
+chmod -R 755 .
+chmod -R 777 var/
+chmod -R 755 public/
+echo -e "${GREEN}✅ Permissions fixed${NC}"
 
 
 echo ""
 echo -e "${GREEN}✅ Setup completed successfully!${NC}"
-echo -e "${YELLOW}Your application is available at: http://${SUBNET_ALIAS}:${APACHE_PORT}${NC}"
+if [ "$SETUP_HOSTS" = "true" ]; then
+    echo -e "${YELLOW}Your application is available at: http://${SUBNET_ALIAS}:${APACHE_PORT}${NC}"
+else
+    echo -e "${YELLOW}Your application is available at: http://localhost:${APACHE_PORT}${NC}"
+    echo -e "${YELLOW}To use the domain alias, run: make setup-hosts${NC}"
+fi
