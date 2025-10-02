@@ -11,16 +11,14 @@ parameters:
     ignoreErrors:
         # Ignore errors in generated files
         - '#Call to an undefined method [a-zA-Z0-9\\_]+::[a-zA-Z0-9\\_]+\(\)#'
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
+        # Ignore missing iterable value types (replaces checkMissingIterableValueType)
+        - identifier: missingType.iterableValue
+        # Ignore missing generic typehints (replaces checkGenericClassInNonGenericObjectType)
+        - identifier: missingType.generics
     reportUnmatchedIgnoredErrors: false
 
 includes:
     - vendor/phpstan/phpstan-symfony/extension.neon
     - vendor/phpstan/phpstan-doctrine/extension.neon
 
-services:
-    -
-        class: {{APP_NAMESPACE}}\Kernel
-        public: true
 
