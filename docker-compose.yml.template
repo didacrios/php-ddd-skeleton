@@ -19,7 +19,7 @@ services:
         depends_on:
             - {{DOCKER_DB_CONTAINER_NAME}}
         environment:
-            XDEBUG_CONFIG: client_host={{XDEBUG_HOST}} remote_port={{XDEBUG_PORT}} remote_enable=1
+            XDEBUG_CONFIG: client_host={{XDEBUG_HOST}} client_port={{XDEBUG_PORT}} mode=debug
         networks:
             default:
                 ipv4_address: {{SUBNET_BASE}}.1

@@ -40,6 +40,10 @@ RUN docker-php-ext-install curl \
     && docker-php-ext-install -j$(nproc) gd \
     && docker-php-ext-enable opcache
 
+# Install Xdebug 3.x
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
 RUN a2enmod rewrite headers
 
 EXPOSE 80
